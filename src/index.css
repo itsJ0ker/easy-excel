@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-3;
+    }
+  }
+}
+
+@layer components {
+  /* Mobile table improvements */
+  .mobile-table {
+    @apply text-xs;
+  }
+  
+  .mobile-table th,
+  .mobile-table td {
+    @apply px-2 py-1;
+  }
+  
+  /* Mobile modal improvements */
+  .mobile-modal {
+    @apply mx-2 max-h-[95vh];
+  }
+  
+  /* Mobile button improvements */
+  .mobile-btn {
+    @apply py-2 px-3 text-sm;
+  }
+}
