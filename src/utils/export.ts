@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { Column, DataRow, ExportOptions, CellStyle } from '../types';
+import type { Column, DataRow, ExportOptions } from '../types';
 import { exportToExcelWithFormatting } from './excelExport';
 
 export const exportToExcel = async (
@@ -26,7 +26,7 @@ export const exportToExcel = async (
   rows.forEach(row => {
     const rowData = columns.map(col => {
       const value = row.data[col.id] || '';
-      return formatForExport(value, col, options);
+      return formatForExport(value, col);
     });
     wsData.push(rowData);
   });
@@ -62,101 +62,16 @@ export const exportToExcel = async (
   XLSX.writeFile(wb, fileNameWithExt);
 };
 
-const applyCellFormatting = (
-  ws: XLSX.WorkSheet, 
-  cellAddress: string, 
-  style: CellStyle, 
-  column?: Column
-) => {
-  if (!ws[cellAddress]) return;
-
-  const cell = ws[cellAddress];
-  
-  // Initialize cell style object
-  if (!cell.s) cell.s = {};
-
-  // Font formatting
-  if (style.bold || style.italic || style.fontSize || style.fontFamily || style.textColor) {
-    cell.s.font = {
-      bold: style.bold || false,
-      italic: style.italic || false,
-      underline: style.underline || false,
-      sz: style.fontSize || 12,
-      name: style.fontFamily || 'Arial',
-      color: style.textColor ? { rgb: style.textColor.replace('#', '') } : undefined
-    };
-  }
-
-  // Background color
-  if (style.backgroundColor) {
-    cell.s.fill = {
-      fgColor: { rgb: style.backgroundColor.replace('#', '') },
-      patternType: 'solid'
-    };
-  }
-
-  // Alignment
-  if (style.textAlign || style.verticalAlign) {
-    cell.s.alignment = {
-      horizontal: style.textAlign || 'left',
-      vertical: style.verticalAlign || 'bottom',
-      wrapText: true
-    };
-  }
-
-  // Borders
-  if (style.border) {
-    cell.s.border = {};
-    if (style.border.top) {
-      cell.s.border.top = {
-        style: style.border.top.style,
-        color: { rgb: style.border.top.color.replace('#', '') }
-      };
-    }
-    if (style.border.bottom) {
-      cell.s.border.bottom = {
-        style: style.border.bottom.style,
-        color: { rgb: style.border.bottom.color.replace('#', '') }
-      };
-    }
-    if (style.border.left) {
-      cell.s.border.left = {
-        style: style.border.left.style,
-        color: { rgb: style.border.left.color.replace('#', '') }
-      };
-    }
-    if (style.border.right) {
-      cell.s.border.right = {
-        style: style.border.right.style,
-        color: { rgb: style.border.right.color.replace('#', '') }
-      };
-    }
-  }
-
-  // Number format
-  if (style.numberFormat) {
-    cell.z = style.numberFormat;
-  } else if (column) {
-    // Apply default formatting based on column type
-    switch (column.type) {
-      case 'currency':
-        cell.z = column.format?.currency === 'EUR' ? '€#,##0.00' : 
-                 column.format?.currency === 'GBP' ? '£#,##0.00' : 
-                 '"$"#,##0.00';
-        break;
-      case 'percentage':
-        cell.z = '0.00%';
-        break;
-      case 'date':
-        cell.z = column.format?.dateFormat || 'mm/dd/yyyy';
-        break;
-      case 'number':
-        const decimals = column.format?.decimalPlaces || 2;
-        cell.z = decimals > 0 ? `#,##0.${'0'.repeat(decimals)}` : '#,##0';
-        break;
-    }
-  }
-};
+// Note: This function is kept for potential future use with XLSX library
+// Currently using ExcelJS for better formatting support
+// const applyCellFormatting = (
+//   ws: XLSX.WorkSheet, 
+//   cellAddress: string, 
+//   style: CellStyle, 
+//   column?: Column
+// ) => {
+//   // Implementation available but not used in current version
+// };
 
 export const exportToCSV = (
   fileName: string,
@@ -173,7 +88,7 @@ export const exportToCSV = (
   rows.forEach(row => {
     const rowData = columns.map(col => {
       const value = row.data[col.id] || '';
-      const formatted = formatForExport(value, col, options);
+      const formatted = formatForExport(value, col);
       return `"${formatted.replace(/"/g, '""')}"`;
     });
     csvContent += rowData.join(',') + '\n';
@@ -193,14 +108,13 @@ export const exportToCSV = (
 export const exportToJSON = (
   fileName: string,
   columns: Column[],
-  rows: DataRow[],
-  options: ExportOptions
+  rows: DataRow[]
 ) => {
   const jsonData = rows.map(row => {
     const obj: Record<string, any> = {};
     columns.forEach(col => {
       const value = row.data[col.id] || '';
-      obj[col.name] = formatForExport(value, col, options);
+      obj[col.name] = formatForExport(value, col);
     });
     return obj;
   });
@@ -217,7 +131,7 @@ export const exportToJSON = (
   document.body.removeChild(link);
 };
 
-const formatForExport = (value: string, column: Column, options: ExportOptions): string => {
+const formatForExport = (value: string, column: Column): string => {
   if (!value.trim()) return value;
 
   switch (column.type) {

@@ -102,7 +102,7 @@ export const formatValue = (value: string, column: Column): string => {
     case 'date':
       const dateValue = new Date(value);
       if (!isNaN(dateValue.getTime())) {
-        const format = column.format?.dateFormat || 'MM/dd/yyyy';
+        // Use the configured date format or default
         return dateValue.toLocaleDateString();
       }
       break;

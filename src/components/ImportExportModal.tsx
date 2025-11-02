@@ -87,7 +87,7 @@ export default function ImportExportModal({
           exportToCSV(fileName, columns, rows, exportOptions);
           break;
         case 'json':
-          exportToJSON(fileName, columns, rows, exportOptions);
+          exportToJSON(fileName, columns, rows);
           break;
       }
       toast.success('File exported successfully!');
